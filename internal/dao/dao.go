@@ -5,9 +5,17 @@ import (
 	"trade-system/config"
 
 	"github.com/go-redis/redis"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
+
+var D *Dao
+
+func init() {
+	config.LoadConfig()
+	D, _ = newDao(config.ServiceConf)
+}
 
 type Dao struct {
 	Config  *config.Config
@@ -39,16 +47,13 @@ func newDao(c *config.Config) (*Dao, error) {
 func newMysql(c *config.MysqlConfig) (*gorm.DB, error) {
 	connArgs := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?&charset=utf8mb4&parseTime=True&loc=Local",
 		c.MysqlUser, c.MysqlPwd, c.MysqlIP, c.MysqlPort, c.DataBase)
-	db, err := gorm.Open("mysql", connArgs)
-	db.SingularTable(true)
+	db, err := gorm.Open(mysql.Open(connArgs), &gorm.Config{NamingStrategy: schema.NamingStrategy{
+		SingularTable: true,
+	}})
 	if err != nil {
 		return nil, err
 	}
 
-	// 检查数据库是否连接成功
-	if err := db.DB().Ping(); err != nil {
-		return nil, err
-	}
 	return db, nil
 }
 
