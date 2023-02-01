@@ -6,6 +6,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	TradePairChannel   = "trade_pair"
+	KLineIn1MinChannel = "1min_k_line"
+	KLineIn5MinChannel = "5min_k_line"
+)
+
 type MysqlConfig struct {
 	MysqlIP   string `mapstructure:"ip"`
 	MysqlPort string `mapstructure:"port"`
