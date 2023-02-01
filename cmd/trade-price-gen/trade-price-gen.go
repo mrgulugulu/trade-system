@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
-	"trade-system/config"
 	"trade-system/internal/dao"
 	"trade-system/internal/model"
 )
@@ -22,6 +22,11 @@ var (
 )
 
 func main() {
+	d, err := dao.NewDao()
+	if err != nil {
+		fmt.Printf("new dao error: %v", err)
+		return
+	}
 	priceList := randFloats(minPrice, maxPrice, genAmount)
 	amtList := randFloats(minAmt, maxAmt, genAmount)
 	// total >= amt
@@ -32,7 +37,17 @@ func main() {
 		totalList[i] = amtList[i] + diffList[i]
 		tradePairList[i] = model.TradePair{Price: priceList[i], Amt: amtList[i], Total: totalList[i]}
 	}
-	save2mysql(tradePairList)
+
+	count := 0
+	for i, p := range tradePairList {
+		if err := d.MysqlDb.Create(&p).Error; err != nil {
+			log.Printf("db.Create index: %d, err : %v", i, err)
+			continue
+		}
+		count++
+	}
+
+	fmt.Printf("成功插入%d条数据", count)
 
 }
 
@@ -43,11 +58,4 @@ func randFloats(min, max float64, n int) []float64 {
 		res[i] = min + rand.Float64()*(max-min)
 	}
 	return res
-}
-
-func save2mysql(tradePairList []model.TradePair) {
-	config.LoadConfig()
-	count := dao.D.InsertTradePair(tradePairList)
-	fmt.Println(count)
-
 }

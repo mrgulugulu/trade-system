@@ -10,21 +10,21 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-var D *Dao
-
-func init() {
-	config.LoadConfig()
-	D, _ = newDao(config.ServiceConf)
-}
-
-type Dao struct {
+type dao struct {
 	Config  *config.Config
 	MysqlDb *gorm.DB
 	RedisDb *redis.Client
 }
 
+// NewDao 对外暴露的初始化Dao
+func NewDao() (*dao, error) {
+	config.LoadConfig()
+	d, err := newDao(config.ServiceConf)
+	return d, err
+}
+
 // newDao 初始化Dao
-func newDao(c *config.Config) (*Dao, error) {
+func newDao(c *config.Config) (*dao, error) {
 	// 连接mysql
 	mysqlDb, err := newMysql(c.Mysqlcfg)
 	if err != nil {
@@ -34,12 +34,12 @@ func newDao(c *config.Config) (*Dao, error) {
 	if err != nil {
 		return nil, err
 	}
-	dao := &Dao{
+	d := &dao{
 		MysqlDb: mysqlDb,
 		RedisDb: redisDb,
 		Config:  c,
 	}
-	return dao, nil
+	return d, nil
 
 }
 
