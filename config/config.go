@@ -1,3 +1,4 @@
+// package config 项目的配置参数设置
 package config
 
 import (
@@ -7,9 +8,9 @@ import (
 )
 
 var (
-	TradePairChannel   = "trade_pair"
-	KLineIn1MinChannel = "1min_k_line"
-	KLineIn5MinChannel = "5min_k_line"
+	TradePairChannelName   = "trade_pair"
+	KLineIn1MinChannelName = "1min_k_line"
+	KLineIn5MinChannelName = "5min_k_line"
 )
 
 type MysqlConfig struct {

@@ -29,12 +29,14 @@ func main() {
 
 		var tradePair model.TradePair
 		d.MysqlDb.ScanRows(rows, &tradePair)
-		tradePairByte, err := json.Marshal(tradePair)
+		var tradePairWithTime model.TradePairWithTime
+		tradePairWithTime.Time, tradePairWithTime.TradePair = time.Now().Unix(), tradePair
+		tradePairByte, err := json.Marshal(tradePairWithTime)
 		if err != nil {
 			fmt.Printf("data %v cannot be marshaled: %v", tradePair, err)
 		}
 		tradePairStr := string(tradePairByte)
-		_, err = d.RedisDb.Publish(config.TradePairChannel, tradePairStr).Result()
+		_, err = d.RedisDb.Publish(config.TradePairChannelName, tradePairStr).Result()
 		if err != nil {
 			fmt.Printf("trade-pair: %v publish error: %v", tradePairStr, err)
 		}
