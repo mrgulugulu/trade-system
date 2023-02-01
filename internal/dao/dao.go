@@ -1,3 +1,4 @@
+// package dao 与数据库相关
 package dao
 
 import (
