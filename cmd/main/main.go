@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"trade-system/config"
 	"trade-system/internal/dao"
 	"trade-system/internal/kline"
@@ -54,8 +55,13 @@ func main() {
 		}
 		// 交给k线函数处理
 		if tradePair.Time == tEnd {
-			kLineIn1Min = kline.KLineIn1MinGen(tradePairIn1MinList)
-			d.SaveKLineInfo2Mysql()
+
+			kLineIn1Min := kline.KLineIn1MinGen(tradePairIn1MinList)
+			err = d.SaveKLineInfo2Mysql(kLineIn1Min)
+			if err != nil {
+				log.Printf("save k line error: %v", err)
+			}
+			// 重置
 			tradePairIn1MinList = make([]model.TradePairWithTime, 0)
 		}
 
