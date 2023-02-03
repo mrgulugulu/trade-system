@@ -8,6 +8,7 @@ type TradePair struct {
 	Total float64 `gorm:"total" json:"total"`
 }
 
+// TradePairWithTime 带有交易时间的交易对结构体
 type TradePairWithTime struct {
 	TradePair
 	Time int64 `json:"time"`
