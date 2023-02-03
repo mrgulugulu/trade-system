@@ -21,11 +21,9 @@ func main() {
 	// 2. 建立基于gin的http服务，从mysql中读取k线信息，然后publish到redis的指定频道中
 	tradePairChan := make(chan string)
 	go d.SubscribeFromRedis(config.TradePairChannelName, tradePairChan)
-	// 一分钟有可能不止60条交易对哦，不能用一个固定的切片来承载，可能只能用channel了
 	// 先用append来实现基本功能吧，接下来再迭代
 	tradePairIn1MinList := make([]model.TradePairWithTime, 0)
-	restList := make([]model.TradePairWithTime, 0)
-	tradePairIn5MinList := make([]model.TradePairWithTime, 0)
+	// tradePairIn5MinList := make([]model.TradePairWithTime, 0)
 	flag := 0
 	var tEnd int64
 	for {
@@ -36,31 +34,28 @@ func main() {
 			fmt.Printf("tradePair error: %v", err)
 		}
 		t := tradePair.Time
-		if t%60 == 0 {
-			tEnd = t + 60
-		}
-		// 先判断是否整数分钟，否，则先存起来；是，则清空队列后重新存起来
-		// if t%60 != 0 {
-		// 	tEnd = t + (60 - t%60)
-		// } else {
-		// 	tEnd = t + 60
-		// }
-		// 第一次启动的时候，判断当前时间是否为整数分钟，先将非整数分钟的数据聚合起来
+		// 这里考虑到有部分数据的交易时间并不是从0秒开始，所以单独处理掉，当做是分钟线
 		if t%60 != 0 && flag == 0 {
-			restList = append(restList, tradePair)
 			flag = 1
 			tEnd = tradePair.Time + (60 - tradePair.Time%60)
-		} else if t%60 == 0 || t%60 != 0 && t < tEnd {
-			tradePairIn1MinList = append(tradePairIn1MinList, tradePair)
+		} else if t%60 == 0 && len(tradePairIn1MinList) == 0 {
+			tEnd = t + 60
 		}
-		// 交给k线函数处理
-		if tradePair.Time == tEnd {
+		tradePairIn1MinList = append(tradePairIn1MinList, tradePair)
 
+		// 假定k线程序会一直运行，所以所有的数据都是以整分钟保存的
+		if tradePair.Time == tEnd {
 			kLineIn1Min := kline.KLineIn1MinGen(tradePairIn1MinList)
-			err = d.SaveKLineInfo2Mysql(kLineIn1Min)
+			fmt.Printf("%v", kLineIn1Min)
+			// err = d.SaveKLineInfo2Mysql(kLineIn1Min)
 			if err != nil {
 				log.Printf("save k line error: %v", err)
 			}
+			kByte, err := json.Marshal(kLineIn1Min)
+			if err != nil {
+				log.Printf("marshal error: %v", err)
+			}
+			d.Publish2Redis(config.KLineIn1MinChannelName, string(kByte))
 			// 重置
 			tradePairIn1MinList = make([]model.TradePairWithTime, 0)
 		}

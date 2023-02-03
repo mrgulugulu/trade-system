@@ -18,7 +18,7 @@ var (
 	minDiff = 0.0
 	maxDiff = 2.0
 
-	genAmount = 10
+	genAmount = 100000
 )
 
 func main() {
