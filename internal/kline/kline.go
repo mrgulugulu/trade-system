@@ -8,7 +8,6 @@ import (
 
 // KLineIn1MinGen 生成1分钟k线
 func KLineIn1MinGen(tradePairList []model.TradePairWithTime) model.KLineIn1Min {
-	// 时间切片的划分交给其他函数来处理
 	// 需要记录以下字段的信息：开盘，收盘，最高价，最低价与交易量
 	var op, cl, vol float64
 	var hPrice = -math.MaxFloat64 - 1.0
@@ -35,7 +34,6 @@ func KLineIn1MinGen(tradePairList []model.TradePairWithTime) model.KLineIn1Min {
 
 // KLineIn5MinGen 生成5分钟k线
 func KLineIn5MinGen(tradePairList []model.TradePairWithTime) model.KLineIn5Min {
-	// 时间切片的划分交给其他函数来处理
 	// 需要记录以下字段的信息：开盘，收盘，最高价，最低价与交易量
 	var op, cl, vol float64
 	var hPrice = -math.MaxFloat64 - 1.0
