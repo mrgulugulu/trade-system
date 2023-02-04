@@ -44,7 +44,7 @@ func LoadConfig(confFile ...string) error {
 	c := viper.New()
 	conf := Config{}
 	c.AddConfigPath("../../config")
-	c.AddConfigPath("./config")
+	c.AddConfigPath("../config")
 	c.SetConfigName("config")
 	c.SetConfigType("yaml")
 	err := c.ReadInConfig()

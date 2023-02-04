@@ -24,6 +24,11 @@ type KLineIn1Min struct {
 	Volume       float64 `gorm:"volume" json:"volume"`
 }
 
+// TableName 返回在mysql对应的表名
+func (n KLineIn1Min) TableName() string {
+	return "1min_trade_data"
+}
+
 // KLineIn5Min 5分钟k线的结构体
 type KLineIn5Min struct {
 	Time         int64   `gorm:"time" json:"time"`
@@ -32,4 +37,9 @@ type KLineIn5Min struct {
 	HighestPrice float64 `gorm:"highest_price" json:"highest_price"`
 	LowestPrice  float64 `gorm:"lowest_price" json:"lowest_price"`
 	Volume       float64 `gorm:"volume" json:"volume"`
+}
+
+// TableName 返回在mysql对应的表名
+func (n KLineIn5Min) TableName() string {
+	return "5min_trade_data"
 }
