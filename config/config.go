@@ -3,14 +3,23 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 var (
-	TradePairChannelName   = "trade_pair"
-	KLineIn1MinChannelName = "1min_k_line"
-	KLineIn5MinChannelName = "5min_k_line"
+	// 交易对chan
+	TradePairChannelName = "trade_pair"
+
+	// cache过期时间
+	CacheExpirationTime = 30 * time.Second
+	// cache清理间隔
+	CacheCleanUpInterval = 60 * time.Second
+	// 1分钟k线cache的前半部分key
+	CacheKeyKLineIn1Min = "klinein1min"
+	// 5分钟k线cache的前半部分key
+	CacheKeyKLineIn5Min = "klinein5min"
 )
 
 type MysqlConfig struct {
@@ -40,6 +49,7 @@ type ServerConfig struct {
 
 var ServiceConf *Config
 
+// LoadConfig 载入设置
 func LoadConfig(confFile ...string) error {
 	c := viper.New()
 	conf := Config{}

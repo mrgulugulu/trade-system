@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/viper v1.15.0
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3

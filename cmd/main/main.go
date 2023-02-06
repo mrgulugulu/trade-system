@@ -8,7 +8,15 @@ import (
 	"trade-system/internal/dao"
 	"trade-system/internal/kline"
 	"trade-system/internal/model"
+
+	"github.com/patrickmn/go-cache"
 )
+
+var C cache.Cache
+
+func init() {
+	C = *cache.New(config.CacheExpirationTime, config.CacheCleanUpInterval)
+}
 
 func main() {
 	d, err := dao.NewDao()
@@ -16,9 +24,6 @@ func main() {
 		fmt.Printf("new dao error: %v", err)
 		return
 	}
-	// 需求
-	// 1. 从redis中订阅交易对的channel，处理k线信息存储到mysql中
-	// 2. 建立基于gin的http服务，从mysql中读取k线信息，然后publish到redis的指定频道中
 	tradePairChan := make(chan string)
 	go d.SubscribeFromRedis(config.TradePairChannelName, tradePairChan)
 	// TODO: 用切片的话，如果遇到巨量的交易对，可能会导致消耗过多的内存空间
