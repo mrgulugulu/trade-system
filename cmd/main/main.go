@@ -7,6 +7,7 @@ import (
 	"trade-system/internal/kline"
 	"trade-system/internal/log"
 	"trade-system/internal/model"
+	"trade-system/internal/server"
 )
 
 func main() {
@@ -15,6 +16,12 @@ func main() {
 		log.Sugar.Panicf("new dao error: %v", err)
 		return
 	}
+
+	s := server.Server{
+		Addr: config.ServiceConf.ServerCfg.Addr,
+		Port: config.ServiceConf.ServerCfg.Port,
+	}
+	go s.Run()
 	tradePairChan := make(chan string)
 	go d.SubscribeFromRedis(config.TradePairChannelName, tradePairChan)
 	// TODO: 用切片的话，如果遇到巨量的交易对，可能会导致消耗过多的内存空间
@@ -49,7 +56,7 @@ func main() {
 		// 假定k线程序会一直运行，所以所有的数据都是以整分钟保存的
 		switch t {
 		case tEnd5Min:
-			kLineIn5Min := kline.KLineIn5MinGen(tradePairIn1MinList)
+			kLineIn5Min := kline.KLineIn5MinGen(tradePairIn5MinList)
 			err = d.SaveKLineInfo2Mysql(kLineIn5Min)
 			if err != nil {
 				log.Sugar.Errorf("save 1-min-k-line error: %v", err)
@@ -75,9 +82,9 @@ func main() {
 			d.Publish2Redis(config.KLineIn1MinChannelName, string(kByte))
 			// 重置交易对列表
 			tradePairIn1MinList = make([]model.TradePairWithTime, 0)
-
 		}
 	}
+
 	// TODO: 需要一个优雅退出
 
 }

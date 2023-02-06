@@ -28,7 +28,7 @@ func queryKLineIn1Min(c *gin.Context) {
 	v, found := cache.C.Get(config.CacheKeyKLineIn1Min + queryAmountStr)
 	if found {
 		res, err := v.([]model.KLineIn1Min)
-		if err == true {
+		if err {
 			c.String(http.StatusOK, fmt.Sprintf("%+v", res))
 			log.Sugar.Infof("get data from cache successfully; data: ", res)
 			return
@@ -64,7 +64,7 @@ func queryKLineIn1Min(c *gin.Context) {
 	c.String(http.StatusOK, fmt.Sprintf("%+v", kLineInfo))
 }
 
-// queryKLineIn5Min 查询一分钟k线的信息
+// queryKLineIn5Min 查询五分钟k线的信息
 func queryKLineIn5Min(c *gin.Context) {
 	queryAmountStr := c.DefaultQuery("amount", "10")
 	d, err := dao.NewDao()
@@ -78,7 +78,7 @@ func queryKLineIn5Min(c *gin.Context) {
 	v, found := cache.C.Get(config.CacheKeyKLineIn5Min + queryAmountStr)
 	if found {
 		res, err := v.([]model.KLineIn1Min)
-		if err == true {
+		if err {
 			c.String(http.StatusOK, fmt.Sprintf("%+v", res))
 			log.Sugar.Infof("get data from cache successfully; data: ", res)
 			return
@@ -96,6 +96,7 @@ func queryKLineIn5Min(c *gin.Context) {
 	switch res.Error {
 	case gorm.ErrInvalidDB:
 		c.String(http.StatusInternalServerError, "invalid db: %v", err)
+
 		log.Sugar.Errorf("invalid db: %v", err)
 	case gorm.ErrEmptySlice:
 		c.String(http.StatusNotFound, "data not found: %v", err)

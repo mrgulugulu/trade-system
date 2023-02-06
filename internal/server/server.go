@@ -18,7 +18,7 @@ func (s *Server) Run() {
 	r := gin.Default()
 
 	r.GET("/kLine1Min", queryKLineIn1Min)
-	r.GET("/kLine5Min", queryKLineIn1Min)
+	r.GET("/kLine5Min", queryKLineIn5Min)
 	// r.GET("/filmInfo/top10", top10)
 	// r.DELETE("/filmInfo", delete)
 	// r.POST("/filmInfo", update)
