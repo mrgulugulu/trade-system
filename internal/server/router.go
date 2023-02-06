@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"strconv"
+	"strings"
 	"trade-system/config"
 	"trade-system/internal/cache"
 	"trade-system/internal/dao"
@@ -11,8 +11,6 @@ import (
 	"trade-system/internal/model"
 
 	"github.com/gin-gonic/gin"
-
-	"gorm.io/gorm"
 )
 
 // queryKLineIn1Min 查询一分钟k线的信息
@@ -24,8 +22,9 @@ func queryKLineIn1Min(c *gin.Context) {
 		log.Sugar.Panicf("database connect errors: %v", err)
 		return
 	}
-	// 先查询cache, key的格式为klinein1min+返回数量，如查询最新10条1分钟K线信息，则key为“klinein1min10”
-	v, found := cache.C.Get(config.CacheKeyKLineIn1Min + queryAmountStr)
+	// 先查询cache, key的格式为klinein1min+返回数量，如查询最新10条1分钟K线信息，则key为“klinein1min-10”
+	cacheKey := fmt.Sprintf("%s-%s", config.CacheKeyKLineIn1Min, queryAmountStr)
+	v, found := cache.C.Get(cacheKey)
 	if found {
 		res, err := v.([]model.KLineIn1Min)
 		if err {
@@ -34,34 +33,15 @@ func queryKLineIn1Min(c *gin.Context) {
 			return
 		}
 	}
-
-	queryAmout, err := strconv.Atoi(queryAmountStr)
+	kLineType := c.Request.URL.Path
+	res, err := dao.QueryKLineInfoFromMysql(d, kLineType, queryAmountStr)
 	if err != nil {
-		c.String(http.StatusBadRequest, "query amount invalid: %v", err)
-		log.Sugar.Errorf("query amount invalid: %v", err)
+		c.String(http.StatusInternalServerError, "query k line error: %v", err)
+		log.Sugar.Errorf("query k line error: %v", err)
 		return
 	}
-
-	var kLineInfo []model.KLineIn1Min
-	res := d.MysqlDb.Order("time desc").Limit(queryAmout).Find(&kLineInfo)
-	switch res.Error {
-	case gorm.ErrInvalidDB:
-		c.String(http.StatusInternalServerError, "invalid db: %v", err)
-		log.Sugar.Errorf("invalid db: %v", err)
-		return
-	case gorm.ErrEmptySlice:
-		c.String(http.StatusNotFound, "data not found: %v", err)
-		log.Sugar.Errorf("data not found: %v", err)
-		return
-	}
-	if len(kLineInfo) == 0 {
-		c.String(http.StatusNotFound, "data not found")
-		log.Sugar.Errorf("data not found")
-		return
-	}
-	// 设置缓存
-	cache.C.Set(config.CacheKeyKLineIn1Min+queryAmountStr, kLineInfo, config.CacheExpirationTime)
-	c.String(http.StatusOK, fmt.Sprintf("%+v", kLineInfo))
+	cache.C.Set(cacheKey, res, config.CacheExpirationTime)
+	c.String(http.StatusOK, fmt.Sprintf("%+v", res))
 }
 
 // queryKLineIn5Min 查询五分钟k线的信息
@@ -69,12 +49,13 @@ func queryKLineIn5Min(c *gin.Context) {
 	queryAmountStr := c.DefaultQuery("amount", "10")
 	d, err := dao.NewDao()
 	if err != nil {
-		c.String(http.StatusInternalServerError, "database connect errors: %v", d)
+		c.String(http.StatusInternalServerError, "database connect errors: %v", err)
 		log.Sugar.Panicf("database connect errors: %v", err)
 		return
 	}
-	// 先查询cache, key的格式为klinein1min+返回数量，如查询最新10条1分钟K线信息，则key为“klinein1min10”
-	v, found := cache.C.Get(config.CacheKeyKLineIn5Min + queryAmountStr)
+	// 先查询cache, key的格式为klinein5min+返回数量，如查询最新10条5分钟K线信息，则key为“klinein5min10”
+	cacheKey := fmt.Sprintf("%s-%s", config.CacheKeyKLineIn1Min, queryAmountStr)
+	v, found := cache.C.Get(cacheKey)
 	if found {
 		res, err := v.([]model.KLineIn1Min)
 		if err {
@@ -83,35 +64,18 @@ func queryKLineIn5Min(c *gin.Context) {
 			return
 		}
 	}
-
-	queryAmout, err := strconv.Atoi(queryAmountStr)
+	kLineType := c.Request.URL.Path
+	res, err := dao.QueryKLineInfoFromMysql(d, kLineType, queryAmountStr)
 	if err != nil {
-		c.String(http.StatusBadRequest, "query amount invalid: %v", err)
-		log.Sugar.Errorf("query amount invalid: %v", err)
+		c.String(http.StatusInternalServerError, "query k line error: %v", err)
+		log.Sugar.Errorf("query k line error: %v", err)
 		return
 	}
-
-	var kLineInfo []model.KLineIn5Min
-	res := d.MysqlDb.Order("time desc").Limit(queryAmout).Find(&kLineInfo)
-	switch res.Error {
-	case gorm.ErrInvalidDB:
-		c.String(http.StatusInternalServerError, "invalid db: %v", err)
-		log.Sugar.Errorf("invalid db: %v", err)
-	case gorm.ErrEmptySlice:
-		c.String(http.StatusNotFound, "data not found: %v", err)
-		log.Sugar.Errorf("data not found: %v", err)
-	}
-	if len(kLineInfo) == 0 {
-		c.String(http.StatusNotFound, "data not found")
-		log.Sugar.Errorf("data not found")
-		return
-	}
-	// 设置缓存
-	cache.C.Set(config.CacheKeyKLineIn5Min+queryAmountStr, kLineInfo, config.CacheExpirationTime)
-	c.String(http.StatusOK, fmt.Sprintf("%+v", kLineInfo))
+	cache.C.Set(cacheKey, res, config.CacheExpirationTime)
+	c.String(http.StatusOK, fmt.Sprintf("%+v", res))
 }
 
-func queryKeyFromKLineIn1Min(c *gin.Context) {
+func queryKLineIn1MinWithKey(c *gin.Context) {
 	key := c.Param("key")
 	queryAmountStr := c.DefaultQuery("amount", "10")
 	d, err := dao.NewDao()
@@ -121,30 +85,57 @@ func queryKeyFromKLineIn1Min(c *gin.Context) {
 		return
 	}
 
-	queryAmout, err := strconv.Atoi(queryAmountStr)
+	// 先查询cache, key的格式为klinein1min+查询字段+返回数量，如查询10条最高的开盘价，则cache的key为“klinein1min-open-10”
+	cacheKey := fmt.Sprintf("%s-%s-%s", config.CacheKeyKLineIn1Min, key, queryAmountStr)
+	v, found := cache.C.Get(cacheKey)
+	if found {
+		res, err := v.([]model.KLineIn1Min)
+		if err {
+			c.String(http.StatusOK, fmt.Sprintf("%+v", res))
+			log.Sugar.Infof("get data from cache successfully; data: ", res)
+			return
+		}
+	}
+	kLineType := strings.Split(c.Request.URL.Path, "/")[1]
+	res, err := dao.QueryKLineInfoFromMysqlWithKey(d, kLineType, key, queryAmountStr)
 	if err != nil {
-		c.String(http.StatusBadRequest, "query amount invalid: %v", err)
-		log.Sugar.Errorf("query amount invalid: %v", err)
+		c.String(http.StatusInternalServerError, "query k line error: %v", err)
+		log.Sugar.Errorf("query k line error: %v", err)
 		return
 	}
 
-	var kLineInfo []model.KLineIn1Min
-	res := d.MysqlDb.Order(fmt.Sprintf("%s desc", key)).Limit(queryAmout).Find(&kLineInfo)
-	switch res.Error {
-	case gorm.ErrInvalidDB:
-		c.String(http.StatusInternalServerError, "invalid db: %v", err)
-		log.Sugar.Errorf("invalid db: %v", err)
-	case gorm.ErrEmptySlice:
-		c.String(http.StatusNotFound, "data not found: %v", err)
-		log.Sugar.Errorf("data not found: %v", err)
-	}
-	if len(kLineInfo) == 0 {
-		c.String(http.StatusNotFound, "data not found")
-		log.Sugar.Errorf("data not found")
-		return
-	}
+	cache.C.Set(cacheKey, res, config.CacheExpirationTime)
+	c.String(http.StatusOK, fmt.Sprintf("%+v", res))
 }
 
-func queryKeyFromKLineIn5Min(c *gin.Context) {
+func queryKLineIn5MinWithKey(c *gin.Context) {
+	key := c.Param("key")
+	queryAmountStr := c.DefaultQuery("amount", "10")
+	d, err := dao.NewDao()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "database connect errors: %v", d)
+		log.Sugar.Panicf("database connect errors: %v", err)
+		return
+	}
 
+	// 先查询cache, key的格式为klinein1min+查询字段+返回数量，如查询10条最高的开盘价，则cache的key为“klinein1min-open-10”
+	cacheKey := fmt.Sprintf("%s-%s-%s", config.CacheKeyKLineIn5Min, key, queryAmountStr)
+	v, found := cache.C.Get(cacheKey)
+	if found {
+		res, err := v.([]model.KLineIn5Min)
+		if err {
+			c.String(http.StatusOK, fmt.Sprintf("%+v", res))
+			log.Sugar.Infof("get data from cache successfully; data: ", res)
+			return
+		}
+	}
+	kLineType := strings.Split(c.Request.URL.Path, "/")[1]
+	res, err := dao.QueryKLineInfoFromMysqlWithKey(d, kLineType, key, queryAmountStr)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "query k line error: %v", err)
+		log.Sugar.Errorf("query k line error: %v", err)
+		return
+	}
+	cache.C.Set(cacheKey, res, config.CacheExpirationTime)
+	c.String(http.StatusOK, fmt.Sprintf("%+v", res))
 }

@@ -16,19 +16,23 @@ type Server struct {
 
 func (s *Server) Run() {
 	r := gin.Default()
-
-	r.GET("/kLine1Min", queryKLineIn1Min)
-	r.GET("/kLine5Min", queryKLineIn5Min)
-	// r.GET("/filmInfo/top10", top10)
-	// r.DELETE("/filmInfo", delete)
-	// r.POST("/filmInfo", update)
+	kLine1Min := r.Group("/kLine1Min")
+	{
+		kLine1Min.GET("", queryKLineIn1Min)
+		kLine1Min.GET("/:key", queryKLineIn1MinWithKey)
+	}
+	kLine5Min := r.Group("/kLine5Min")
+	{
+		kLine5Min.GET("", queryKLineIn5Min)
+		kLine5Min.GET("/:key", queryKLineIn5MinWithKey)
+	}
 
 	ser := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", s.Addr, s.Port),
 		Handler: r,
 	}
 	// 搞个signal来监听，实现优雅关闭
-	log.Sugar.Infof("listening ", ser.Addr)
+	log.Sugar.Infof("listening %v", ser.Addr)
 	ser.ListenAndServe()
 	// gracefulExitServer(ser)
 }
