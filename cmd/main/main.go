@@ -16,7 +16,6 @@ func main() {
 		log.Sugar.Panicf("new dao error: %v", err)
 		return
 	}
-
 	s := server.Server{
 		Addr: config.ServiceConf.ServerCfg.Addr,
 		Port: config.ServiceConf.ServerCfg.Port,
@@ -57,13 +56,14 @@ func main() {
 		switch t {
 		case tEnd5Min:
 			kLineIn5Min := kline.KLineIn5MinGen(tradePairIn5MinList)
+			log.Sugar.Infof("kLineIn5Min: %+v", kLineIn5Min)
 			err = d.SaveKLineInfo2Mysql(kLineIn5Min)
 			if err != nil {
-				log.Sugar.Errorf("save 1-min-k-line error: %v", err)
+				log.Sugar.Errorf("save 5-min-k-line error: %v", err)
 			}
 			kByte, err := json.Marshal(kLineIn5Min)
 			if err != nil {
-				log.Sugar.Errorf("1-min-k-line marshal error: %v", err)
+				log.Sugar.Errorf("5-min-k-line marshal error: %v", err)
 			}
 			d.Publish2Redis(config.KLineIn5MinChannelName, string(kByte))
 			// 重置交易对列表
@@ -71,13 +71,14 @@ func main() {
 			fallthrough
 		case tEnd1Min:
 			kLineIn1Min := kline.KLineIn1MinGen(tradePairIn1MinList)
+			log.Sugar.Infof("kLineIn1Min: %+v", kLineIn1Min)
 			err = d.SaveKLineInfo2Mysql(kLineIn1Min)
 			if err != nil {
-				log.Sugar.Errorf("save 5-min-k-line error: %v", err)
+				log.Sugar.Errorf("save 1-min-k-line error: %v", err)
 			}
 			kByte, err := json.Marshal(kLineIn1Min)
 			if err != nil {
-				log.Sugar.Errorf("5-min-k-line marshal error: %v", err)
+				log.Sugar.Errorf("1-min-k-line marshal error: %v", err)
 			}
 			d.Publish2Redis(config.KLineIn1MinChannelName, string(kByte))
 			// 重置交易对列表
@@ -86,5 +87,4 @@ func main() {
 	}
 
 	// TODO: 需要一个优雅退出
-
 }

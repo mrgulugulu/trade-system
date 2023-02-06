@@ -3,7 +3,6 @@ package config
 
 import (
 	"time"
-	"trade-system/internal/log"
 
 	"github.com/spf13/viper"
 )
@@ -22,6 +21,8 @@ var (
 	CacheKeyKLineIn1Min = "klinein1min"
 	// 5分钟k线cache的前半部分key
 	CacheKeyKLineIn5Min = "klinein5min"
+	// log文件的保存路径
+	LogFilePath = "../../internal/log/kline.log"
 )
 
 type MysqlConfig struct {
@@ -55,14 +56,11 @@ var ServiceConf *Config
 func LoadConfig(confFile ...string) {
 	c := viper.New()
 	conf := Config{}
-	c.AddConfigPath("../../config")
 	c.AddConfigPath("../config")
+	c.AddConfigPath("../../config")
 	c.SetConfigName("config")
 	c.SetConfigType("yaml")
-	err := c.ReadInConfig()
-	if err != nil {
-		log.Sugar.Infof("read config error: %v", err)
-	}
-	err = c.Unmarshal(&conf)
+	c.ReadInConfig()
+	c.Unmarshal(&conf)
 	ServiceConf = &conf
 }
