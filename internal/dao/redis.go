@@ -1,6 +1,8 @@
 package dao
 
-import "fmt"
+import (
+	"trade-system/internal/log"
+)
 
 // SubscribeFromRedis 从redis中订阅指定channel
 func (d *dao) SubscribeFromRedis(chanName string, tradePairChan chan<- string) {
@@ -15,7 +17,7 @@ func (d *dao) SubscribeFromRedis(chanName string, tradePairChan chan<- string) {
 func (d *dao) Publish2Redis(chanName string, msg string) {
 	_, err := d.RedisDb.Publish(chanName, msg).Result()
 	if err != nil {
-		fmt.Printf("data: %s publish to redis error: %v", msg, err)
+		log.Sugar.Errorf("data: %s publish to redis error: %v", msg, err)
 		// TODO: 之后要保存到日志中
 	}
 }

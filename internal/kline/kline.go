@@ -48,7 +48,7 @@ func KLineIn5MinGen(tradePairList []model.TradePairWithTime) model.KLineIn5Min {
 		vol += p.Total
 	}
 	return model.KLineIn5Min{
-		// 12:05分的一分钟k线指12:00:00-12:04:49的k线信息
+		// 12:05分的五分钟k线指12:00:00-12:04:49的k线信息
 		Time:         tradePairList[len(tradePairList)-1].Time,
 		Open:         op,
 		Close:        cl,

@@ -4,6 +4,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"trade-system/internal/log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func (s *Server) Run() {
 		Handler: r,
 	}
 	// 搞个signal来监听，实现优雅关闭
-	fmt.Println("listening ", ser.Addr)
+	log.Sugar.Infof("listening ", ser.Addr)
 	ser.ListenAndServe()
 	// gracefulExitServer(ser)
 }

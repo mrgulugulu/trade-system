@@ -2,18 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"trade-system/config"
 	"trade-system/internal/dao"
 	"trade-system/internal/kline"
+	"trade-system/internal/log"
 	"trade-system/internal/model"
 )
 
 func main() {
 	d, err := dao.NewDao()
 	if err != nil {
-		fmt.Printf("new dao error: %v", err)
+		log.Sugar.Panicf("new dao error: %v", err)
 		return
 	}
 	tradePairChan := make(chan string)
@@ -28,7 +27,7 @@ func main() {
 		tradePair := model.TradePairWithTime{}
 		err = json.Unmarshal([]byte(tradePairStr), &tradePair)
 		if err != nil {
-			log.Printf("tradePair unmarshal error: %v", err)
+			log.Sugar.Errorf("tradePair unmarshal error: %v", err)
 		}
 		t := tradePair.Time
 		// 这里考虑到有部分数据的交易时间并不是从0秒开始，所以单独处理掉，当做是分钟线
@@ -53,11 +52,11 @@ func main() {
 			kLineIn5Min := kline.KLineIn5MinGen(tradePairIn1MinList)
 			err = d.SaveKLineInfo2Mysql(kLineIn5Min)
 			if err != nil {
-				log.Printf("save k line error: %v", err)
+				log.Sugar.Errorf("save 1-min-k-line error: %v", err)
 			}
 			kByte, err := json.Marshal(kLineIn5Min)
 			if err != nil {
-				log.Printf("marshal error: %v", err)
+				log.Sugar.Errorf("1-min-k-line marshal error: %v", err)
 			}
 			d.Publish2Redis(config.KLineIn5MinChannelName, string(kByte))
 			// 重置交易对列表
@@ -67,11 +66,11 @@ func main() {
 			kLineIn1Min := kline.KLineIn1MinGen(tradePairIn1MinList)
 			err = d.SaveKLineInfo2Mysql(kLineIn1Min)
 			if err != nil {
-				log.Printf("save k line error: %v", err)
+				log.Sugar.Errorf("save 5-min-k-line error: %v", err)
 			}
 			kByte, err := json.Marshal(kLineIn1Min)
 			if err != nil {
-				log.Printf("marshal error: %v", err)
+				log.Sugar.Errorf("5-min-k-line marshal error: %v", err)
 			}
 			d.Publish2Redis(config.KLineIn1MinChannelName, string(kByte))
 			// 重置交易对列表

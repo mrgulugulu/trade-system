@@ -54,7 +54,6 @@ func newMysql(c *config.MysqlConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return db, nil
 }
 
@@ -70,6 +69,5 @@ func newRedis(c *config.RedisConfig) (*redis.Client, error) {
 	if _, err := redisDb.Ping().Result(); err != nil {
 		return nil, err
 	}
-
 	return redisDb, nil
 }

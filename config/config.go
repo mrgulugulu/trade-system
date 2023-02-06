@@ -2,8 +2,8 @@
 package config
 
 import (
-	"fmt"
 	"time"
+	"trade-system/internal/log"
 
 	"github.com/spf13/viper"
 )
@@ -52,7 +52,7 @@ type ServerConfig struct {
 var ServiceConf *Config
 
 // LoadConfig 载入设置
-func LoadConfig(confFile ...string) error {
+func LoadConfig(confFile ...string) {
 	c := viper.New()
 	conf := Config{}
 	c.AddConfigPath("../../config")
@@ -61,9 +61,8 @@ func LoadConfig(confFile ...string) error {
 	c.SetConfigType("yaml")
 	err := c.ReadInConfig()
 	if err != nil {
-		return fmt.Errorf("read config error: %v", err)
+		log.Sugar.Infof("read config error: %v", err)
 	}
 	err = c.Unmarshal(&conf)
 	ServiceConf = &conf
-	return err
 }
