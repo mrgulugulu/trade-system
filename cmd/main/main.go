@@ -8,15 +8,7 @@ import (
 	"trade-system/internal/dao"
 	"trade-system/internal/kline"
 	"trade-system/internal/model"
-
-	"github.com/patrickmn/go-cache"
 )
-
-var C cache.Cache
-
-func init() {
-	C = *cache.New(config.CacheExpirationTime, config.CacheCleanUpInterval)
-}
 
 func main() {
 	d, err := dao.NewDao()

@@ -11,7 +11,9 @@ import (
 var (
 	// 交易对chan
 	TradePairChannelName = "trade_pair"
-
+	// 用于订阅redis的channel名
+	KLineIn1MinChannelName = "1min_k_line"
+	KLineIn5MinChannelName = "5min_k_line"
 	// cache过期时间
 	CacheExpirationTime = 30 * time.Second
 	// cache清理间隔
