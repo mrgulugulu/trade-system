@@ -44,9 +44,9 @@
 4. 启动cmd/trade-price-read/trade-price-read.go，从mysql中读取交易对信息，并以每秒10笔的速度publish出去  
 
 ## API实例 (如无amount，则默认为十条信息)
-`GET /kLine1Min?amount=k` ：返回最新k条1分钟k线信息
-`GET /kLine5Min?amount=k` ：返回最新k条5分钟k线信息
-`GET /kLine1Min/key?amount=k` ：返回倒序以key字段排列的k条数据；如`/kLine1Min/open?amount=k`，则返回最大的k个开盘价1分钟k线信息并以倒序排列
-`GET /kLine5Min/key?amount=k` ：返回倒序以key字段排列的k条数据；如`/kLine1Min/open?amount=k`，则返回最大的k个开盘价5分钟k线信息并以倒序排列
+`GET /kLine1Min?amount=k` ：返回最新k条1分钟k线信息  
+`GET /kLine5Min?amount=k` ：返回最新k条5分钟k线信息  
+`GET /kLine1Min/key?amount=k` ：返回倒序以key字段排列的k条数据；如`/kLine1Min/open?amount=k`，则返回最大的k个开盘价1分钟k线信息并以倒序排列  
+`GET /kLine5Min/key?amount=k` ：返回倒序以key字段排列的k条数据；如`/kLine5Min/open?amount=k`，则返回最大的k个开盘价5分钟k线信息并以倒序排列  
 
 
