@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"time"
 	"trade-system/internal/log"
 )
 
@@ -14,10 +15,12 @@ func (d *dao) SubscribeFromRedis(chanName string, tradePairChan chan<- string) {
 }
 
 // Publish2Redis publish信息到redis的指定channel
-func (d *dao) Publish2Redis(chanName string, msg string) {
-	_, err := d.RedisDb.Publish(chanName, msg).Result()
-	if err != nil {
-		log.Sugar.Errorf("data: %s publish to redis error: %v", msg, err)
-		// TODO: 之后要保存到日志中
+func (d *dao) Publish2Redis(chanName string, msgChan <-chan string) {
+	for v := range msgChan {
+		_, err := d.RedisDb.Publish(chanName, v).Result()
+		if err != nil {
+			log.Sugar.Errorf("data: %s publish to redis error: %v", v, err)
+		}
+		time.Sleep(500 * time.Millisecond)
 	}
 }

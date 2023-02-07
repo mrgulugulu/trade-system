@@ -1,0 +1,14 @@
+mysql:
+  ip: 
+  port: 
+  user: 
+  pwd: 
+  database: 
+redis:
+  ip: 
+  port: 
+  pwd: 
+  db: 
+server:
+  addr: 
+  port: 

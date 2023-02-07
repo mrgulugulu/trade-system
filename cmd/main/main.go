@@ -28,6 +28,9 @@ func main() {
 	tradePairIn5MinList := make([]model.TradePairWithTime, 0)
 	flag1Min, flag5Min := 0, 0
 	var tEnd1Min, tEnd5Min int64
+	kLineIn1MinChan, kLineIn5MinChan := make(chan string, 10), make(chan string, 10)
+	go d.Publish2Redis(config.KLineIn5MinChannelName, kLineIn5MinChan)
+	go d.Publish2Redis(config.KLineIn1MinChannelName, kLineIn1MinChan)
 	for {
 		tradePairStr := <-tradePairChan
 		tradePair := model.TradePairWithTime{}
@@ -65,7 +68,7 @@ func main() {
 			if err != nil {
 				log.Sugar.Errorf("5-min-k-line marshal error: %v", err)
 			}
-			d.Publish2Redis(config.KLineIn5MinChannelName, string(kByte))
+			kLineIn5MinChan <- string(kByte)
 			// 重置交易对列表
 			tradePairIn5MinList = make([]model.TradePairWithTime, 0)
 			fallthrough
@@ -80,7 +83,7 @@ func main() {
 			if err != nil {
 				log.Sugar.Errorf("1-min-k-line marshal error: %v", err)
 			}
-			d.Publish2Redis(config.KLineIn1MinChannelName, string(kByte))
+			kLineIn1MinChan <- string(kByte)
 			// 重置交易对列表
 			tradePairIn1MinList = make([]model.TradePairWithTime, 0)
 		}
