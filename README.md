@@ -24,7 +24,7 @@
 │   │   ├── mysql.go              // 操作mysql  
 │   │   └── redis.go              // 操作redis  
 │   ├── kline  
-│   │   └── kline.go              // k线信息的生成函数  
+│   │   └── kline.go              // k线信息的生成函数   
 │   ├── log  
 │   │   └── log.go                // 日志文件的初始化  
 │   ├── model  
